@@ -107,10 +107,27 @@ function connectToExport(node) {
     if (mediaStreamDestination) node.connect(mediaStreamDestination);
 }
 
+/**
+ * Автоматическая очистка AudioNodes после завершения воспроизведения
+ * Предотвращает самую большую утечку памяти в Web Audio API
+ */
+function autoDisposeNode(node, stopTime) {
+    node.onended = () => {
+        node.disconnect();
+        node.onended = null;
+    };
+}
+
 function initAudio() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
+    
+    // Исправляем: автоматически возобновляем контекст если он приостановлен браузером
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    
     if (!mediaStreamDestination && audioContext) {
         mediaStreamDestination = audioContext.createMediaStreamDestination();
         // НЕ подключаем mediaStreamDestination к audioContext.destination!
@@ -153,6 +170,7 @@ function playLute(frequency) {
 
     source.start(now);
     source.stop(now + 3.0);
+    autoDisposeNode(source, now + 3.0);
 }
 
 // ---------- 🎻 ВИОЛА ----------
@@ -206,6 +224,7 @@ function playViola(frequency) {
     connectToExport(bowNoiseGain);
     bowNoise.start(now);
     bowNoise.stop(now + 0.3);
+    autoDisposeNode(bowNoise, now + 0.3);
 
     const gainNode = audioContext.createGain();
     const baseVol = 0.35;
@@ -222,6 +241,7 @@ function playViola(frequency) {
     connectToExport(gainNode);
     noiseSource.start(now);
     noiseSource.stop(now + duration);
+    autoDisposeNode(noiseSource, now + duration);
 }
 
 // ---------- 📯 ФЛЕЙТА ----------
@@ -306,6 +326,12 @@ function playFlute(frequency) {
     osc3.stop(now + duration);
     vibrato.stop(now + duration);
     airSource.stop(now + duration);
+    
+    autoDisposeNode(osc, now + duration);
+    autoDisposeNode(osc2, now + duration);
+    autoDisposeNode(osc3, now + duration);
+    autoDisposeNode(vibrato, now + duration);
+    autoDisposeNode(airSource, now + duration);
 }
 
 // ---------- 🔨 ЦИМБАЛЫ ----------

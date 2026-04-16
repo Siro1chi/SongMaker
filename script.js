@@ -1037,7 +1037,6 @@ tempoSlider.addEventListener('change', () => {
     if (isPlaying) { stopPlaying(); startPlaying(); }
 });
 colsInput.addEventListener('input', updateCols);
-colsInput.addEventListener('change', updateCols);
 colsInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') updateCols();
 });

@@ -381,14 +381,16 @@ function playDrumSound(type) {
     initAudio();
     const now = audioContext.currentTime;
     switch(type) {
-        case 0: playTambourine(now); break;      // Hi-Hat
+        case 0: playHiHat(now); break;           // Hi-Hat
         case 1: playMedievalSnare(now); break;   // Snare
         case 2: playFrameDrum(now); break;       // Kick
         case 3: playHandClap(now); break;        // Clap
-        case 4: playTabor(now); break;           // Tambourine
+        case 4: playTambourine(now); break;      // Tambourine
         case 5: playTomHi(now); break;           // Tom Hi
         case 6: playTomLo(now); break;           // Tom Lo
         case 7: playShaker(now); break;          // Shaker
+        case 8: playCowbell(now); break;         // Cowbell
+        case 9: playWoodblock(now); break;       // Woodblock
     }
 }
 function playHandClap(time) {
@@ -485,6 +487,36 @@ function playTabor(time) {
     src.start(time); src.stop(time + 0.06);
 }
 
+function playTambourine(time) {
+    // Metal jingles - high frequency noise bursts
+    for (let i = 0; i < 3; i++) {
+        const t = time + i * 0.02;
+        const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.04, audioContext.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let j = 0; j < d.length; j++) d[j] = Math.random() * 2 - 1;
+        const src = audioContext.createBufferSource();
+        src.buffer = buf;
+        const bp = audioContext.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 8000; bp.Q.value = 2;
+        const g = audioContext.createGain();
+        g.gain.setValueAtTime(0.25, t);
+        g.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
+        src.connect(bp); bp.connect(g); g.connect(audioContext.destination);
+        if (mediaStreamDestination) g.connect(mediaStreamDestination);
+        src.start(t); src.stop(t + 0.05);
+    }
+    // Add a subtle drum hit
+    const osc = audioContext.createOscillator();
+    osc.frequency.setValueAtTime(200, time);
+    osc.frequency.exponentialRampToValueAtTime(100, time + 0.1);
+    const g = audioContext.createGain();
+    g.gain.setValueAtTime(0.3, time);
+    g.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+    osc.connect(g); g.connect(audioContext.destination);
+    if (mediaStreamDestination) g.connect(mediaStreamDestination);
+    osc.start(time); osc.stop(time + 0.2);
+}
+
 function playTomHi(time) {
     const osc = audioContext.createOscillator();
     osc.type = 'sine';
@@ -578,6 +610,22 @@ function playWoodblock(time) {
     if (mediaStreamDestination) ng.connect(mediaStreamDestination);
     if (mediaStreamDestination) ng.connect(mediaStreamDestination);
     src.start(time); src.stop(time + 0.04);
+}
+
+function playHiHat(time) {
+    const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.05, audioContext.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = audioContext.createBufferSource();
+    src.buffer = buf;
+    const hp = audioContext.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 7000;
+    const g = audioContext.createGain();
+    g.gain.setValueAtTime(0.3, time);
+    g.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+    src.connect(hp); hp.connect(g); g.connect(audioContext.destination);
+    if (mediaStreamDestination) g.connect(mediaStreamDestination);
+    src.start(time); src.stop(time + 0.05);
 }
 
 // ==================== СЕТКА ====================

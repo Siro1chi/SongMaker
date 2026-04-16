@@ -1037,8 +1037,24 @@ tempoSlider.addEventListener('change', () => {
     if (isPlaying) { stopPlaying(); startPlaying(); }
 });
 colsInput.addEventListener('input', updateCols);
+colsInput.addEventListener('change', updateCols);
+colsInput.addEventListener('keyup', updateCols);
+// Отключаем стандартное поведение стрелок чтобы не было двойных событий
 colsInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') updateCols();
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const delta = e.key === 'ArrowUp' ? 1 : -1;
+        let val = parseInt(colsInput.value) + delta;
+        if (val < 1) val = 1;
+        if (val > 1024) val = 1024;
+        colsInput.value = val;
+        updateCols();
+    }
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        updateCols();
+        colsInput.blur();
+    }
 });
 
 mainTabBtns.forEach(btn => btn.addEventListener('click', () => switchMainTab(btn.dataset.mainTab)));

@@ -1037,23 +1037,29 @@ tempoSlider.addEventListener('change', () => {
     tempoValue.textContent = val;
     if (isPlaying) { stopPlaying(); startPlaying(); }
 });
-colsInput.addEventListener('input', updateCols);
-colsInput.addEventListener('change', updateCols);
-colsInput.addEventListener('keyup', updateCols);
+let colsUpdateLock = false;
+colsInput.addEventListener('input', () => {
+    if (colsUpdateLock) return;
+    colsUpdateLock = true;
+    updateCols();
+    setTimeout(() => colsUpdateLock = false, 10);
+});
 // Отключаем стандартное поведение стрелок чтобы не было двойных событий
 colsInput.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
+        if (colsUpdateLock) return;
         const delta = e.key === 'ArrowUp' ? 1 : -1;
         let val = parseInt(colsInput.value) + delta;
         if (val < 1) val = 1;
         if (val > 1024) val = 1024;
         colsInput.value = val;
+        colsUpdateLock = true;
         updateCols();
+        setTimeout(() => colsUpdateLock = false, 10);
     }
     if (e.key === 'Enter') {
         e.preventDefault();
-        updateCols();
         colsInput.blur();
     }
 });

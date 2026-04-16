@@ -414,6 +414,7 @@ function playHandClap(time) {
         src.connect(bp);
         bp.connect(g);
         g.connect(audioContext.destination);
+        if (mediaStreamDestination) bp.connect(mediaStreamDestination);
         if (mediaStreamDestination) g.connect(mediaStreamDestination);
         src.start(t);
         src.stop(t + 0.12);
@@ -442,7 +443,10 @@ function playMedievalSnare(time) {
     ng.gain.setValueAtTime(0.3, time);
     ng.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
     src.connect(bp); bp.connect(ng); ng.connect(audioContext.destination);
+    if (mediaStreamDestination) bp.connect(mediaStreamDestination);
+    if (mediaStreamDestination) ng.connect(mediaStreamDestination);
     src.start(time); src.stop(time + 0.1);
+    
 }
 
 function playFrameDrum(time) {
@@ -484,6 +488,8 @@ function playTabor(time) {
     sg.gain.setValueAtTime(0.15, time);
     sg.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
     src.connect(bp); bp.connect(sg); sg.connect(audioContext.destination);
+    if (mediaStreamDestination) bp.connect(mediaStreamDestination);
+    if (mediaStreamDestination) sg.connect(mediaStreamDestination);
     src.start(time); src.stop(time + 0.06);
 }
 
@@ -502,6 +508,7 @@ function playTambourine(time) {
         g.gain.setValueAtTime(0.25, t);
         g.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
         src.connect(bp); bp.connect(g); g.connect(audioContext.destination);
+        if (mediaStreamDestination) bp.connect(mediaStreamDestination);
         if (mediaStreamDestination) g.connect(mediaStreamDestination);
         src.start(t); src.stop(t + 0.05);
     }
@@ -525,8 +532,7 @@ function playTomHi(time) {
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.5, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
-    osc.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
+    osc.connect(g); g.connect(audioContext.destination);    
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
     osc.start(time); osc.stop(time + 0.35);
 }
@@ -540,7 +546,6 @@ function playTomLo(time) {
     g.gain.setValueAtTime(0.55, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
     osc.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
     osc.start(time); osc.stop(time + 0.45);
 }
@@ -557,7 +562,7 @@ function playShaker(time) {
     g.gain.setValueAtTime(0.2, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.06);
     src.connect(hp); hp.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
+    if (mediaStreamDestination) hp.connect(mediaStreamDestination);
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
     src.start(time); src.stop(time + 0.08);
 }
@@ -577,7 +582,7 @@ function playCowbell(time) {
     osc1.connect(bp);
     osc2.connect(bp);
     bp.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
+    if (mediaStreamDestination) bp.connect(mediaStreamDestination);
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
     osc1.start(time); osc2.start(time);
     osc1.stop(time + 0.2); osc2.stop(time + 0.2);
@@ -593,7 +598,6 @@ function playWoodblock(time) {
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
     osc.connect(g); g.connect(audioContext.destination);
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
     osc.start(time); osc.stop(time + 0.1);
 
     const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.03, audioContext.sampleRate);
@@ -607,7 +611,7 @@ function playWoodblock(time) {
     ng.gain.setValueAtTime(0.15, time);
     ng.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
     src.connect(hp); hp.connect(ng); ng.connect(audioContext.destination);
-    if (mediaStreamDestination) ng.connect(mediaStreamDestination);
+    if (mediaStreamDestination) hp.connect(mediaStreamDestination);
     if (mediaStreamDestination) ng.connect(mediaStreamDestination);
     src.start(time); src.stop(time + 0.04);
 }
@@ -624,6 +628,7 @@ function playHiHat(time) {
     g.gain.setValueAtTime(0.3, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
     src.connect(hp); hp.connect(g); g.connect(audioContext.destination);
+    if (mediaStreamDestination) hp.connect(mediaStreamDestination);
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
     src.start(time); src.stop(time + 0.05);
 }

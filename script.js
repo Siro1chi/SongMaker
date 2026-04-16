@@ -913,6 +913,7 @@ function updateCols() {
     colsInput.value = val;
 
     const newCols = val;
+    const oldCols = numCols;
 
     // Пересоздаём сетки для всех инструментов
     INSTRUMENTS.forEach(inst => {
@@ -947,7 +948,26 @@ function updateCols() {
         drumWrapper.appendChild(createDrumGrid());
     }
 
+    // Обновляем курсоры, чтобы не выходили за границы
+    cursorMelody.col = Math.min(cursorMelody.col, numCols - 1);
+    cursorDrums.col = Math.min(cursorDrums.col, numCols - 1);
+    currentCol = Math.min(currentCol, numCols - 1);
+
     if (isPlaying) { stopPlaying(); startPlaying(); }
+}
+
+function addColumn() {
+    let val = parseInt(colsInput.value) || numCols;
+    val = Math.min(val + 1, 1024);
+    colsInput.value = val;
+    updateCols();
+}
+
+function removeColumn() {
+    let val = parseInt(colsInput.value) || numCols;
+    val = Math.max(val - 1, 1);
+    colsInput.value = val;
+    updateCols();
 }
 
 // ==================== КЛАВИАТУРА ====================
@@ -1025,6 +1045,13 @@ colsInput.addEventListener('change', updateCols);
 colsInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') updateCols();
 });
+
+// Кнопки добавления/удаления столбцов
+const addColBtn = document.getElementById('addColBtn');
+const removeColBtn = document.getElementById('removeColBtn');
+if (addColBtn) addColBtn.addEventListener('click', addColumn);
+if (removeColBtn) removeColBtn.addEventListener('click', removeColumn);
+
 mainTabBtns.forEach(btn => btn.addEventListener('click', () => switchMainTab(btn.dataset.mainTab)));
 instTabBtns.forEach(btn => btn.addEventListener('click', () => switchInstrument(btn.dataset.instrument)));
 document.addEventListener('keydown', handleKeyboard);

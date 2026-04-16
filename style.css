@@ -107,14 +107,14 @@ h1 {
     transform: translateY(-2px);
 }
 
-.tempo-control, .cols-control {
+.tempo-control {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 5px;
 }
 
-.tempo-control label, .cols-control label {
+.tempo-control label {
     font-size: 1rem;
     color: #666;
 }
@@ -124,14 +124,43 @@ h1 {
     cursor: pointer;
 }
 
+.cols-control {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.cols-control label {
+    font-size: 1rem;
+    color: #666;
+}
+
 .cols-control input {
-    width: 80px;
+    width: 60px;
     padding: 6px 10px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     font-size: 1rem;
     text-align: center;
     cursor: pointer;
+}
+
+.btn-sm {
+    padding: 8px 14px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #667eea;
+    color: white;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.btn-sm:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
 }
 
 .cols-control input:focus {

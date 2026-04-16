@@ -139,9 +139,7 @@ function playLute(frequency) {
     const gain = audioContext.createGain();
     source.connect(filter);
     filter.connect(gain);
-    // Connect to both the regular output and the export stream
-    gain.connect(audioContext.destination);
-    if (mediaStreamDestination) gain.connect(mediaStreamDestination);
+    connectToExport(gain);
 
     const now = audioContext.currentTime;
     // Apply instrument volume
@@ -205,7 +203,7 @@ function playViola(frequency) {
     bowNoiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
     bowNoise.connect(bowNoiseFilter);
     bowNoiseFilter.connect(bowNoiseGain);
-    bowNoiseGain.connect(audioContext.destination);
+    connectToExport(bowNoiseGain);
     bowNoise.start(now);
     bowNoise.stop(now + 0.3);
 
@@ -221,8 +219,7 @@ function playViola(frequency) {
     waveshaper.connect(filter);
     filter.connect(filter2);
     filter2.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    if (mediaStreamDestination) gainNode.connect(mediaStreamDestination);
+    connectToExport(gainNode);
     noiseSource.start(now);
     noiseSource.stop(now + duration);
 }
@@ -263,8 +260,7 @@ function playFlute(frequency) {
 
     airSource.connect(airFilter);
     airFilter.connect(airGain);
-    airGain.connect(audioContext.destination);
-    if (mediaStreamDestination) airGain.connect(mediaStreamDestination);
+    connectToExport(airGain);
 
     const gainNode = audioContext.createGain();
     const baseVol = 0.35;
@@ -297,8 +293,7 @@ function playFlute(frequency) {
     osc3.connect(gain3);
     gain3.connect(resonance);
     resonance.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    if (mediaStreamDestination) gainNode.connect(mediaStreamDestination);
+    connectToExport(gainNode);
 
     osc.start(now);
     osc2.start(now);
@@ -335,8 +330,7 @@ function playDulcimer(frequency) {
         g.gain.linearRampToValueAtTime(vol, now + 0.003);
         g.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
         osc.connect(g);
-        g.connect(audioContext.destination);
-        if (mediaStreamDestination) g.connect(mediaStreamDestination);
+        connectToExport(g);
         osc.start(now);
         osc.stop(now + 2.5);
     });
@@ -355,8 +349,7 @@ function playDulcimer(frequency) {
     hitGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
     hitSrc.connect(hitFilter);
     hitFilter.connect(hitGain);
-    hitGain.connect(audioContext.destination);
-    if (mediaStreamDestination) hitGain.connect(mediaStreamDestination);
+    connectToExport(hitGain);
     hitSrc.start(now);
     hitSrc.stop(now + 0.06);
 }

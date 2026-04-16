@@ -102,18 +102,19 @@ const instTabBtns = document.querySelectorAll('.instrument-tabs .tab-btn');
 
 // ==================== AUDIO ====================
 
+function connectToExport(node) {
+    node.connect(audioContext.destination);
+    if (mediaStreamDestination) node.connect(mediaStreamDestination);
+}
+
 function initAudio() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
-    // Create a MediaStreamDestination once the AudioContext exists
-    if (!mediaStreamDestination) {
+    if (!mediaStreamDestination && audioContext) {
         mediaStreamDestination = audioContext.createMediaStreamDestination();
-        // Connect the destination to the context so that all sounds are routed through it.
-        // Individual sources already connect to audioContext.destination; we also connect
-        // the destination node to the same output to capture the mixed signal.
-        // This does not affect playback because the node simply forwards the audio.
-        mediaStreamDestination.connect(audioContext.destination);
+        // НЕ подключаем mediaStreamDestination к audioContext.destination!
+        // Это создает обратную связь. Просто оставляем его как отдельный выход для записи.
     }
 }
 
@@ -138,9 +139,7 @@ function playLute(frequency) {
     const gain = audioContext.createGain();
     source.connect(filter);
     filter.connect(gain);
-    // Connect to both the regular output and the export stream
-    gain.connect(audioContext.destination);
-    if (mediaStreamDestination) gain.connect(mediaStreamDestination);
+    connectToExport(gain);
 
     const now = audioContext.currentTime;
     // Apply instrument volume
@@ -204,7 +203,7 @@ function playViola(frequency) {
     bowNoiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
     bowNoise.connect(bowNoiseFilter);
     bowNoiseFilter.connect(bowNoiseGain);
-    bowNoiseGain.connect(audioContext.destination);
+    connectToExport(bowNoiseGain);
     bowNoise.start(now);
     bowNoise.stop(now + 0.3);
 
@@ -220,8 +219,7 @@ function playViola(frequency) {
     waveshaper.connect(filter);
     filter.connect(filter2);
     filter2.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    if (mediaStreamDestination) gainNode.connect(mediaStreamDestination);
+    connectToExport(gainNode);
     noiseSource.start(now);
     noiseSource.stop(now + duration);
 }
@@ -262,8 +260,7 @@ function playFlute(frequency) {
 
     airSource.connect(airFilter);
     airFilter.connect(airGain);
-    airGain.connect(audioContext.destination);
-    if (mediaStreamDestination) airGain.connect(mediaStreamDestination);
+    connectToExport(airGain);
 
     const gainNode = audioContext.createGain();
     const baseVol = 0.35;
@@ -296,8 +293,7 @@ function playFlute(frequency) {
     osc3.connect(gain3);
     gain3.connect(resonance);
     resonance.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    if (mediaStreamDestination) gainNode.connect(mediaStreamDestination);
+    connectToExport(gainNode);
 
     osc.start(now);
     osc2.start(now);
@@ -334,9 +330,7 @@ function playDulcimer(frequency) {
         g.gain.linearRampToValueAtTime(vol, now + 0.003);
         g.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
         osc.connect(g);
-    g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-        if (mediaStreamDestination) g.connect(mediaStreamDestination);
+        connectToExport(g);
         osc.start(now);
         osc.stop(now + 2.5);
     });
@@ -355,8 +349,7 @@ function playDulcimer(frequency) {
     hitGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
     hitSrc.connect(hitFilter);
     hitFilter.connect(hitGain);
-    hitGain.connect(audioContext.destination);
-    if (mediaStreamDestination) hitGain.connect(mediaStreamDestination);
+    connectToExport(hitGain);
     hitSrc.start(now);
     hitSrc.stop(now + 0.06);
 }
@@ -394,10 +387,8 @@ function playDrumSound(type) {
     }
 }
 function playHandClap(time) {
-    // Extend each burst slightly to avoid abrupt cut‑off and make the clap sound fuller.
     for (let burst = 0; burst < 3; burst++) {
-        const t = time + burst * 0.015; // slightly more spacing
-        // Use a longer buffer (30 ms) for a richer noise burst.
+        const t = time + burst * 0.015;
         const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.03, audioContext.sampleRate);
         const d = buf.getChannelData(0);
         for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
@@ -409,13 +400,10 @@ function playHandClap(time) {
         bp.Q.value = 1;
         const g = audioContext.createGain();
         g.gain.setValueAtTime(0.25, t);
-        // Slightly slower decay for smoother tail.
         g.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
         src.connect(bp);
         bp.connect(g);
-        g.connect(audioContext.destination);
-        if (mediaStreamDestination) bp.connect(mediaStreamDestination);
-        if (mediaStreamDestination) g.connect(mediaStreamDestination);
+        connectToExport(g);
         src.start(t);
         src.stop(t + 0.12);
     }
@@ -428,8 +416,7 @@ function playMedievalSnare(time) {
     g.gain.setValueAtTime(0.4, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
     osc.connect(g);
-    g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
+    connectToExport(g);
     osc.start(time);
     osc.stop(time + 0.15);
 
@@ -446,11 +433,9 @@ function playMedievalSnare(time) {
     ng.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
     src.connect(bp);
     bp.connect(ng);
-    ng.connect(audioContext.destination);
-    if (mediaStreamDestination) ng.connect(mediaStreamDestination);
+    connectToExport(ng);
     src.start(time);
     src.stop(time + 0.1);
-    
 }
 
 function playFrameDrum(time) {
@@ -461,44 +446,15 @@ function playFrameDrum(time) {
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.6, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
-    osc.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc.start(time); osc.stop(time + 0.45);
+    osc.connect(g);
+    connectToExport(g);
+    osc.start(time);
+    osc.stop(time + 0.45);
 }
 
-// Duplicate simple playHandClap removed; using the extended version defined earlier.
-
-function playTabor(time) {
-    const osc = audioContext.createOscillator();
-    osc.frequency.setValueAtTime(180, time);
-    osc.frequency.exponentialRampToValueAtTime(90, time + 0.15);
-    const g = audioContext.createGain();
-    g.gain.setValueAtTime(0.5, time);
-    g.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
-    osc.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc.start(time); osc.stop(time + 0.3);
-
-    const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.05, audioContext.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    const src = audioContext.createBufferSource();
-    src.buffer = buf;
-    const bp = audioContext.createBiquadFilter();
-    bp.type = 'highpass'; bp.frequency.value = 5000;
-    const sg = audioContext.createGain();
-    sg.gain.setValueAtTime(0.15, time);
-    sg.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
-    src.connect(bp); bp.connect(sg); sg.connect(audioContext.destination);
-    if (mediaStreamDestination) bp.connect(mediaStreamDestination);
-    if (mediaStreamDestination) sg.connect(mediaStreamDestination);
-    src.start(time); src.stop(time + 0.06);
-}
 
 function playTambourine(time) {
-    // Metal jingles - high frequency noise bursts
+    // Metal jingles
     for (let i = 0; i < 3; i++) {
         const t = time + i * 0.02;
         const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.04, audioContext.sampleRate);
@@ -507,25 +463,29 @@ function playTambourine(time) {
         const src = audioContext.createBufferSource();
         src.buffer = buf;
         const bp = audioContext.createBiquadFilter();
-        bp.type = 'bandpass'; bp.frequency.value = 8000; bp.Q.value = 2;
+        bp.type = 'bandpass';
+        bp.frequency.value = 8000;
+        bp.Q.value = 2;
         const g = audioContext.createGain();
         g.gain.setValueAtTime(0.25, t);
         g.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
-        src.connect(bp); bp.connect(g); g.connect(audioContext.destination);
-        if (mediaStreamDestination) bp.connect(mediaStreamDestination);
-        if (mediaStreamDestination) g.connect(mediaStreamDestination);
-        src.start(t); src.stop(t + 0.05);
+        src.connect(bp);
+        bp.connect(g);
+        connectToExport(g);
+        src.start(t);
+        src.stop(t + 0.05);
     }
-    // Add a subtle drum hit
+    // Drum hit
     const osc = audioContext.createOscillator();
     osc.frequency.setValueAtTime(200, time);
     osc.frequency.exponentialRampToValueAtTime(100, time + 0.1);
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.3, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
-    osc.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc.start(time); osc.stop(time + 0.2);
+    osc.connect(g);
+    connectToExport(g);
+    osc.start(time);
+    osc.stop(time + 0.2);
 }
 
 function playTomHi(time) {
@@ -536,9 +496,10 @@ function playTomHi(time) {
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.5, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
-    osc.connect(g); g.connect(audioContext.destination);    
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc.start(time); osc.stop(time + 0.35);
+    osc.connect(g);
+    connectToExport(g);
+    osc.start(time);
+    osc.stop(time + 0.35);
 }
 
 function playTomLo(time) {
@@ -549,9 +510,10 @@ function playTomLo(time) {
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.55, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
-    osc.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc.start(time); osc.stop(time + 0.45);
+    osc.connect(g);
+    connectToExport(g);
+    osc.start(time);
+    osc.stop(time + 0.45);
 }
 
 function playShaker(time) {
@@ -561,14 +523,16 @@ function playShaker(time) {
     const src = audioContext.createBufferSource();
     src.buffer = buf;
     const hp = audioContext.createBiquadFilter();
-    hp.type = 'highpass'; hp.frequency.value = 8000;
+    hp.type = 'highpass';
+    hp.frequency.value = 8000;
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.2, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.06);
-    src.connect(hp); hp.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) hp.connect(mediaStreamDestination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    src.start(time); src.stop(time + 0.08);
+    src.connect(hp);
+    hp.connect(g);
+    connectToExport(g);
+    src.start(time);
+    src.stop(time + 0.08);
 }
 
 function playCowbell(time) {
@@ -582,14 +546,17 @@ function playCowbell(time) {
     g.gain.setValueAtTime(0.3, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
     const bp = audioContext.createBiquadFilter();
-    bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 3;
+    bp.type = 'bandpass';
+    bp.frequency.value = 700;
+    bp.Q.value = 3;
     osc1.connect(bp);
     osc2.connect(bp);
-    bp.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) bp.connect(mediaStreamDestination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc1.start(time); osc2.start(time);
-    osc1.stop(time + 0.2); osc2.stop(time + 0.2);
+    bp.connect(g);
+    connectToExport(g);
+    osc1.start(time);
+    osc2.start(time);
+    osc1.stop(time + 0.2);
+    osc2.stop(time + 0.2);
 }
 
 function playWoodblock(time) {
@@ -600,9 +567,10 @@ function playWoodblock(time) {
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.4, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
-    osc.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc.start(time); osc.stop(time + 0.1);
+    osc.connect(g);
+    connectToExport(g);
+    osc.start(time);
+    osc.stop(time + 0.1);
 
     const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.03, audioContext.sampleRate);
     const d = buf.getChannelData(0);
@@ -610,14 +578,16 @@ function playWoodblock(time) {
     const src = audioContext.createBufferSource();
     src.buffer = buf;
     const hp = audioContext.createBiquadFilter();
-    hp.type = 'highpass'; hp.frequency.value = 3000;
+    hp.type = 'highpass';
+    hp.frequency.value = 3000;
     const ng = audioContext.createGain();
     ng.gain.setValueAtTime(0.15, time);
     ng.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
-    src.connect(hp); hp.connect(ng); ng.connect(audioContext.destination);
-    if (mediaStreamDestination) hp.connect(mediaStreamDestination);
-    if (mediaStreamDestination) ng.connect(mediaStreamDestination);
-    src.start(time); src.stop(time + 0.04);
+    src.connect(hp);
+    hp.connect(ng);
+    connectToExport(ng);
+    src.start(time);
+    src.stop(time + 0.04);
 }
 
 function playHiHat(time) {
@@ -627,14 +597,16 @@ function playHiHat(time) {
     const src = audioContext.createBufferSource();
     src.buffer = buf;
     const hp = audioContext.createBiquadFilter();
-    hp.type = 'highpass'; hp.frequency.value = 7000;
+    hp.type = 'highpass';
+    hp.frequency.value = 7000;
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.3, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
-    src.connect(hp); hp.connect(g); g.connect(audioContext.destination);
-    if (mediaStreamDestination) hp.connect(mediaStreamDestination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    src.start(time); src.stop(time + 0.05);
+    src.connect(hp);
+    hp.connect(g);
+    connectToExport(g);
+    src.start(time);
+    src.stop(time + 0.05);
 }
 
 // ==================== СЕТКА ====================

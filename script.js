@@ -907,6 +907,7 @@ function switchInstrument(inst) {
 }
 
 function updateCols() {
+    
     let val = parseInt(colsInput.value);
     if (isNaN(val) || val < 1) val = 1;
     if (val > 1024) val = 1024;
@@ -915,7 +916,7 @@ function updateCols() {
     if (val === numCols) return; // Ничего не изменилось - выходим
 
     const newCols = val;
-
+    numCols = newCols;
     // Пересоздаём сетки для всех инструментов
     INSTRUMENTS.forEach(inst => {
         const old = instrumentGrids[inst].map(r => [...r]);
@@ -941,7 +942,7 @@ function updateCols() {
         }
     }
 
-    numCols = newCols;
+    
     // Перерисовываем ударные
     const drumWrapper = document.getElementById('drumWrapper');
     if (drumWrapper) {

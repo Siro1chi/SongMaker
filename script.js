@@ -421,36 +421,49 @@ function playHandClap(time) {
     }
 }
 function playMedievalSnare(time) {
+    // Tone component - body of the drum
     const osc = audioContext.createOscillator();
-    osc.frequency.setValueAtTime(200, time);
-    osc.frequency.exponentialRampToValueAtTime(80, time + 0.1);
+    osc.frequency.setValueAtTime(180, time);
+    osc.frequency.exponentialRampToValueAtTime(60, time + 0.15);
     const g = audioContext.createGain();
-    g.gain.setValueAtTime(0.4, time);
-    g.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+    g.gain.setValueAtTime(0.5, time);
+    g.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
     osc.connect(g);
     g.connect(audioContext.destination);
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
     osc.start(time);
-    osc.stop(time + 0.15);
+    osc.stop(time + 0.2);
 
-    const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+    // Snare wire noise - filtered and softened
+    const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.15, audioContext.sampleRate);
     const d = buf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     const src = audioContext.createBufferSource();
     src.buffer = buf;
+    
+    // Highpass filter to remove low frequencies from noise
+    const hp = audioContext.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 800;
+    hp.Q.value = 0.7;
+    
+    // Bandpass to shape the snare character
     const bp = audioContext.createBiquadFilter();
     bp.type = 'bandpass';
-    bp.frequency.value = 3000;
+    bp.frequency.value = 1800;
+    bp.Q.value = 1.2;
+    
     const ng = audioContext.createGain();
-    ng.gain.setValueAtTime(0.3, time);
-    ng.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
-    src.connect(bp);
+    ng.gain.setValueAtTime(0.15, time);
+    ng.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+    
+    src.connect(hp);
+    hp.connect(bp);
     bp.connect(ng);
     ng.connect(audioContext.destination);
     if (mediaStreamDestination) ng.connect(mediaStreamDestination);
     src.start(time);
-    src.stop(time + 0.1);
-    
+    src.stop(time + 0.15);
 }
 
 function playFrameDrum(time) {

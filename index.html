@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Maker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Song Maker</h1>
+        
+        <!-- Вкладки: Мелодия / Ударные -->
+        <div class="tabs main-tabs">
+            <button class="tab-btn active" data-main-tab="melody">Мелодия</button>
+            <button class="tab-btn" data-main-tab="drums">Ударные</button>
+        </div>
+        
+        <!-- Вкладки инструментов (внутри Мелодии) -->
+        <div class="tabs instrument-tabs" id="instrumentTabs">
+            <button class="tab-btn active" data-instrument="lute">🪕 Лютня</button>
+            <button class="tab-btn" data-instrument="viola">🎻 Виола</button>
+            <button class="tab-btn" data-instrument="flute">📯 Флейта</button>
+            <button class="tab-btn" data-instrument="dulcimer">🔨 Цимбалы</button>
+        </div>
+
+        <!-- Контейнеры сеток для каждого инструмента -->
+        <div id="melodyGrids">
+            <div id="melody-lute" class="melody-grid-panel"></div>
+            <div id="melody-viola" class="melody-grid-panel hidden"></div>
+            <div id="melody-flute" class="melody-grid-panel hidden"></div>
+            <div id="melody-dulcimer" class="melody-grid-panel hidden"></div>
+        </div>
+        
+        <div class="controls">
+                <button id="playBtn" class="btn btn-primary">▶ Play</button>
+                <button id="clearBtn" class="btn btn-secondary">🗑 Clear</button>
+                <button id="exportBtn" class="btn btn-success">💾 Export</button>
+            <div class="tempo-control">
+                <label for="tempo">Tempo: <span id="tempoValue">120</span> BPM</label>
+                <input type="range" id="tempo" min="60" max="200" value="120">
+            </div>
+            <div class="cols-control">
+                <label for="cols">Столбцы:</label>
+                <input type="number" id="cols" min="1" max="1024" value="16">
+            </div>
+        </div>
+        
+        <div id="gridContainer" class="grid-container"></div>
+        
+        <div class="instructions">
+            <p>Кликайте по ячейкам, чтобы добавлять ноты | 
+               Стрелки — навигация | 
+               Enter — добавить/удалить | 
+               Пробел — Play</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

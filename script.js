@@ -427,10 +427,11 @@ function playMedievalSnare(time) {
     const g = audioContext.createGain();
     g.gain.setValueAtTime(0.4, time);
     g.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
-    osc.connect(g); g.connect(audioContext.destination);
+    osc.connect(g);
+    g.connect(audioContext.destination);
     if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    if (mediaStreamDestination) g.connect(mediaStreamDestination);
-    osc.start(time); osc.stop(time + 0.15);
+    osc.start(time);
+    osc.stop(time + 0.15);
 
     const buf = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
     const d = buf.getChannelData(0);
@@ -438,14 +439,17 @@ function playMedievalSnare(time) {
     const src = audioContext.createBufferSource();
     src.buffer = buf;
     const bp = audioContext.createBiquadFilter();
-    bp.type = 'bandpass'; bp.frequency.value = 3000;
+    bp.type = 'bandpass';
+    bp.frequency.value = 3000;
     const ng = audioContext.createGain();
     ng.gain.setValueAtTime(0.3, time);
     ng.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
-    src.connect(bp); bp.connect(ng); ng.connect(audioContext.destination);
-    if (mediaStreamDestination) bp.connect(mediaStreamDestination);
+    src.connect(bp);
+    bp.connect(ng);
+    ng.connect(audioContext.destination);
     if (mediaStreamDestination) ng.connect(mediaStreamDestination);
-    src.start(time); src.stop(time + 0.1);
+    src.start(time);
+    src.stop(time + 0.1);
     
 }
 

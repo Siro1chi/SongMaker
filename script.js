@@ -1032,6 +1032,14 @@ tempoSlider.addEventListener('input', () => {
     tempoValue.textContent = tempoSlider.value;
     if (isPlaying) { stopPlaying(); startPlaying(); }
 });
+tempoSlider.addEventListener('change', () => {
+    let val = parseInt(tempoSlider.value);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 420) val = 420;
+    tempoSlider.value = val;
+    tempoValue.textContent = val;
+    if (isPlaying) { stopPlaying(); startPlaying(); }
+});
 colsInput.addEventListener('change', updateCols);
 colsInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') updateCols();
